@@ -11,12 +11,12 @@ name: Build and deploy to Azure Kubernetes Service
 
 env:
   AZURE_CONTAINER_REGISTRY: ecrinsights # set this to the name of your container registry
-  PROJECT_NAME: qkinsightsjava              # set this to your project's name
+  PROJECT_NAME: qkinsightsdotnet              # set this to your project's name
   RESOURCE_GROUP: App_insights_AKS_ck          # set this to the resource group containing your AKS cluster
   CLUSTER_NAME: appinsightsaks              # set this to the name of your AKS cluster
   ACR_REGISTRY_URL: ecrinsights.azurecr.io              # set this to the URL of your registry
-  CHART_PATH: "./javasampleapp"
-  CHART_OVERRIDE_PATH: "./javasampleapp/values.yaml"
+  CHART_PATH: "./dotnetsampleapp"
+  CHART_OVERRIDE_PATH: "./dotnetsampleapp/values.yaml"
 #   # If you bake using helm:
 #   CHART_PATH: MY_HELM_FILE                   # set this to the path to your helm file
 #   CHART_OVERRIDE_PATH: MY_OVERRIDE_FILES     # set this to an array of override file paths
@@ -91,9 +91,9 @@ jobs:
 
     - name: Build and push image to ACR
       run: |
-          docker build . -t ${{ env.ACR_REGISTRY_URL }}/qkjavaappdemo:${{ github.sha }} -t ${{ env.ACR_REGISTRY_URL }}/qkjavaappdemo:latest
-          #docker push ${{ env.ACR_REGISTRY_URL }}/qkjavaappdemo:${{ github.sha }}
-          docker push ${{ env.ACR_REGISTRY_URL }}/qkjavaappdemo --all-tags
+          docker build . -t ${{ env.ACR_REGISTRY_URL }}/qkdotnetappdemo:${{ github.sha }} -t ${{ env.ACR_REGISTRY_URL }}/qkdotnetappdemo:latest
+          #docker push ${{ env.ACR_REGISTRY_URL }}/qkdotnetappdemo:${{ github.sha }}
+          docker push ${{ env.ACR_REGISTRY_URL }}/qkdotnetappdemo --all-tags
 
       #  - uses: Azure/k8s-set-context@v1
       #    with:
@@ -106,7 +106,7 @@ jobs:
         cluster-name: ${{ env.CLUSTER_NAME }}
 
     - name: Lint Check
-      run: helm lint ./javasampleapp
+      run: helm lint ./dotnetsampleapp
     # - name: Lint Helm
     #   uses: WyriHaximus/github-action-helm3@v2
     #   with:
@@ -126,7 +126,7 @@ jobs:
         container-registry-url: ${{ env.ACR_REGISTRY_URL }}
         container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
         container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-        secret-name: 'qkjavaappdemo-secret'
+        secret-name: 'qkdotnetappdemo-secret'
       # id: create-secret
 
     - name: App_insights_docker deployment
@@ -145,9 +145,9 @@ jobs:
         action: deploy
         manifests: ${{ steps.bake.outputs.manifestsBundle }}
         images: |
-            ${{ env.ACR_REGISTRY_URL }}/qkjavaappdemo:${{ github.sha }}
+            ${{ env.ACR_REGISTRY_URL }}/qkdotnetappdemo:${{ github.sha }}
         imagepullsecrets: |
-            qkjavaappdemo-secret
+            qkdotnetappdemo-secret
   # Deploy-Application:
   #   if: ${{ always() }}
   #   needs: [login, build-Application]
